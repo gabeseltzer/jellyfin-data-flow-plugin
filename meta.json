@@ -1,0 +1,12 @@
+{
+  "category": "General",
+  "changelog": "Initial release.",
+  "description": "Live network throughput graph in the web client's Playback Info overlay: client download/upload, server totals, rolling average, colour coded against the required bitrate.",
+  "guid": "b7e3d5a2-4c1f-4e8a-9b6d-2f0a7c9e1d3b",
+  "name": "Data Flow",
+  "overview": "Live network throughput graph in Playback Info.",
+  "owner": "Gabriel Seltzer",
+  "targetAbi": "10.11.0.0",
+  "timestamp": "2026-09-05T00:00:00Z",
+  "version": "__VERSION__"
+}

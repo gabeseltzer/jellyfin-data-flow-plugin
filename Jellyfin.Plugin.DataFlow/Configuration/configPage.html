@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Data Flow</title>
+</head>
+<body>
+  <div id="DataFlowConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-checkbox,emby-select">
+    <div data-role="content">
+      <div class="content-primary">
+        <form id="DataFlowConfigForm">
+          <div class="sectionTitleContainer flex align-items-center">
+            <h2 class="sectionTitle">Data Flow</h2>
+          </div>
+          <p>Adds a live network throughput graph to the web client's Playback Info overlay.</p>
+
+          <div class="checkboxContainer checkboxContainer-withDescription">
+            <label class="emby-checkbox-label">
+              <input id="EnableInjection" name="EnableInjection" type="checkbox" is="emby-checkbox" />
+              <span>Inject the graph into the web client</span>
+            </label>
+            <div class="fieldDescription checkboxFieldDescription">Turn off to stop serving the script without uninstalling the plugin. Reload the web client after changing.</div>
+          </div>
+
+          <div class="inputContainer">
+            <input id="PollIntervalMs" name="PollIntervalMs" type="number" is="emby-input" min="1000" max="60000" step="100" label="Poll interval (ms)" />
+            <div class="fieldDescription">How often the open overlay asks the server for new samples. Default 2000, minimum 1000.</div>
+          </div>
+
+          <div class="inputContainer">
+            <input id="HistorySeconds" name="HistorySeconds" type="number" is="emby-input" min="60" max="3600" step="10" label="History length (seconds)" />
+            <div class="fieldDescription">Samples kept in memory per device and for the server. Default 300. Takes effect after a server restart.</div>
+          </div>
+
+          <div class="inputContainer">
+            <input id="MarginPercent" name="MarginPercent" type="number" is="emby-input" min="0" max="90" step="1" label="Marginal band (% below required bitrate)" />
+            <div class="fieldDescription">Throughput within this much below the required bitrate is shown amber; further below is red. Default 20.</div>
+          </div>
+
+          <div class="selectContainer">
+            <label class="selectLabel" for="NetworkInterfaces">Network interfaces for server totals</label>
+            <select id="NetworkInterfaces" name="NetworkInterfaces" is="emby-select" multiple size="5"></select>
+            <div class="fieldDescription">Leave nothing selected to include every interface that is up and not loopback. Hold Ctrl/Cmd to select several.</div>
+          </div>
+
+          <div class="checkboxContainer checkboxContainer-withDescription">
+            <label class="emby-checkbox-label">
+              <input id="EnableBrowserMeasurement" name="EnableBrowserMeasurement" type="checkbox" is="emby-checkbox" />
+              <span>Allow browser-side measurement fallback</span>
+            </label>
+            <div class="fieldDescription checkboxFieldDescription">When a reverse proxy or CDN serves media so the server sees no bytes, the browser measures its own downloads instead.</div>
+          </div>
+
+          <div>
+            <button is="emby-button" type="submit" class="raised button-submit block emby-button">
+              <span>Save</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      (function () {
+        var pluginId = 'b7e3d5a2-4c1f-4e8a-9b6d-2f0a7c9e1d3b';
+        var page = document.querySelector('#DataFlowConfigPage');
+
+        function fillInterfaces(selected) {
+          var select = page.querySelector('#NetworkInterfaces');
+          return ApiClient.getJSON(ApiClient.getUrl('DataFlow/Interfaces')).then(function (list) {
+            select.innerHTML = '';
+            list.forEach(function (nic) {
+              var opt = document.createElement('option');
+              opt.value = nic.name;
+              opt.textContent = nic.name + (nic.up ? '' : ' (down)') + (nic.description && nic.description !== nic.name ? ' - ' + nic.description : '');
+              opt.selected = selected.indexOf(nic.name) >= 0;
+              select.appendChild(opt);
+            });
+            // Keep configured names that are not currently present so they are not silently dropped.
+            selected.forEach(function (name) {
+              if (!list.some(function (nic) { return nic.name === name; })) {
+                var opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name + ' (not found)';
+                opt.selected = true;
+                select.appendChild(opt);
+              }
+            });
+          }).catch(function () { /* non-admin or endpoint unavailable */ });
+        }
+
+        page.addEventListener('pageshow', function () {
+          Dashboard.showLoadingMsg();
+          ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+            page.querySelector('#EnableInjection').checked = config.EnableInjection !== false;
+            page.querySelector('#PollIntervalMs').value = config.PollIntervalMs || 2000;
+            page.querySelector('#HistorySeconds').value = config.HistorySeconds || 300;
+            page.querySelector('#MarginPercent').value = (config.MarginPercent === undefined || config.MarginPercent === null) ? 20 : config.MarginPercent;
+            page.querySelector('#EnableBrowserMeasurement').checked = config.EnableBrowserMeasurement !== false;
+            return fillInterfaces(config.NetworkInterfaces || []);
+          }).then(function () {
+            Dashboard.hideLoadingMsg();
+          }, function () {
+            Dashboard.hideLoadingMsg();
+          });
+        });
+
+        page.querySelector('#DataFlowConfigForm').addEventListener('submit', function (e) {
+          e.preventDefault();
+          Dashboard.showLoadingMsg();
+          ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+            config.EnableInjection = page.querySelector('#EnableInjection').checked;
+            config.PollIntervalMs = parseInt(page.querySelector('#PollIntervalMs').value, 10) || 2000;
+            config.HistorySeconds = parseInt(page.querySelector('#HistorySeconds').value, 10) || 300;
+            config.MarginPercent = parseInt(page.querySelector('#MarginPercent').value, 10);
+            if (isNaN(config.MarginPercent)) { config.MarginPercent = 20; }
+            config.EnableBrowserMeasurement = page.querySelector('#EnableBrowserMeasurement').checked;
+            config.NetworkInterfaces = Array.prototype.slice.call(page.querySelector('#NetworkInterfaces').selectedOptions).map(function (o) { return o.value; });
+            return ApiClient.updatePluginConfiguration(pluginId, config);
+          }).then(function (result) {
+            Dashboard.processPluginConfigurationUpdateResult(result);
+          }, function () {
+            Dashboard.hideLoadingMsg();
+            Dashboard.alert('Failed to save Data Flow settings.');
+          });
+          return false;
+        });
+      })();
+    </script>
+  </div>
+</body>
+</html>
