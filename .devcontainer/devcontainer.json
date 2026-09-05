@@ -5,7 +5,9 @@
   "workspaceFolder": "/workspaces/jellyfin-data-flow-plugin",
   "shutdownAction": "stopCompose",
   "features": {
-    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+    "ghcr.io/devcontainers/features/node:1": { "version": "lts" },
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
   },
   "forwardPorts": [8096],
   "portsAttributes": {
@@ -15,6 +17,7 @@
   "customizations": {
     "vscode": {
       "extensions": [
+        "anthropic.claude-code",
         "ms-dotnettools.csdevkit",
         "ms-dotnettools.csharp",
         "editorconfig.editorconfig",

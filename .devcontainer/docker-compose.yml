@@ -5,6 +5,10 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ..:/workspaces/jellyfin-data-flow-plugin:cached
+      # Share the host's Claude Code login, settings, and memory with the container.
+      # Both paths must exist on the host (they do once you've run `claude` once).
+      - ~/.claude:/home/vscode/.claude
+      - ~/.claude.json:/home/vscode/.claude.json
     working_dir: /workspaces/jellyfin-data-flow-plugin
     command: sleep infinity
     environment:
