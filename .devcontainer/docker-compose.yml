@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ..:/workspaces/jellyfin-data-flow-plugin:cached
+    working_dir: /workspaces/jellyfin-data-flow-plugin
     command: sleep infinity
     environment:
       DOTNET_CLI_TELEMETRY_OPTOUT: "1"
