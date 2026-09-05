@@ -1,0 +1,27 @@
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ..:/workspaces/jellyfin-data-flow-plugin:cached
+    command: sleep infinity
+    environment:
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
+      JELLYFIN_URL: http://jellyfin:8096
+      JELLYFIN_CONTAINER: jellyfin-dataflow-dev
+
+  jellyfin:
+    image: jellyfin/jellyfin:10.11
+    container_name: jellyfin-dataflow-dev
+    ports:
+      - "8096:8096"
+    volumes:
+      - ../.dev/jellyfin/config:/config
+      - ../.dev/jellyfin/cache:/cache
+      - ../dist/plugins:/config/plugins
+      - ../media:/media:ro
+    environment:
+      JELLYFIN_PublishedServerUrl: http://localhost:8096
+    restart: unless-stopped

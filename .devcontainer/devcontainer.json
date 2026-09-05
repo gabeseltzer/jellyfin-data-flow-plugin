@@ -1,0 +1,30 @@
+{
+  "name": "Jellyfin Data Flow plugin",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "dev",
+  "workspaceFolder": "/workspaces/jellyfin-data-flow-plugin",
+  "shutdownAction": "stopCompose",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
+  "forwardPorts": [8096],
+  "portsAttributes": {
+    "8096": { "label": "Jellyfin", "onAutoForward": "notify" }
+  },
+  "postCreateCommand": "bash scripts/post-create.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.csharp",
+        "editorconfig.editorconfig",
+        "dbaeumer.vscode-eslint"
+      ],
+      "settings": {
+        "dotnet.defaultSolution": "Jellyfin.Plugin.DataFlow.sln",
+        "files.eol": "\n"
+      }
+    }
+  },
+  "remoteUser": "vscode"
+}

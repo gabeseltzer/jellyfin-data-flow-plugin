@@ -27,13 +27,23 @@ build.yaml, meta.json template, .editorconfig, .gitignore, README.md
 scripts/dev-jellyfin.ps1               run Jellyfin 10.11 in Docker with plugin dir mounted
 ```
 
-## Phase 0: toolchain (½ day)
+## Phase 0: toolchain (½ day) — devcontainer
 
-- Install .NET 9 SDK (only 6/7/8 present locally). Confirm `dotnet --list-sdks`.
-- Docker Desktop available? If yes, `jellyfin/jellyfin:10.11` container with a bind mount
-  for `/config/plugins` and a small test media folder. If no, use a local Jellyfin tray
-  install and its `%ProgramData%\Jellyfin\Server\plugins` folder.
-- Checkpoint: empty plugin from the template loads and shows in Dashboard > Plugins.
+Decision (2026-09-05): all development happens in a VS Code devcontainer; no .NET SDK on
+the host. `.devcontainer/docker-compose.yml` runs two services:
+
+- `dev`: `mcr.microsoft.com/devcontainers/dotnet:1-9.0` + ffmpeg/jq/curl, repo mounted at
+  `/workspaces/jellyfin-data-flow-plugin`, Docker socket via `docker-outside-of-docker`
+  so scripts can restart the Jellyfin container.
+- `jellyfin`: `jellyfin/jellyfin:10.11`, port 8096 forwarded to the host browser,
+  `dist/plugins` mounted at `/config/plugins`, `media/` mounted read-only, state in `.dev/`.
+
+Scripts: `scripts/post-create.sh` (one-time setup, generates test media),
+`scripts/make-test-media.sh` (ffmpeg clips at 1.5 / 6 / 20 Mbps),
+`scripts/deploy.sh` (build, copy DLL + meta.json into `dist/plugins`, restart Jellyfin, tail logs).
+
+- Checkpoint: devcontainer opens, Jellyfin wizard completes at http://localhost:8096 with
+  `/media` as a Movies library, empty template plugin shows in Dashboard > Plugins.
 
 ## Phase 1: plugin skeleton + injection (1 day)
 

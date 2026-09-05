@@ -9,3 +9,6 @@ artifacts/
 TestResults/
 node_modules/
 .dev/
+dist/
+media/*
+!media/.gitkeep
