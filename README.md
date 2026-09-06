@@ -37,8 +37,15 @@ Nothing runs while the overlay is closed: no polling, no timers, no drawing.
 
 ## Install
 
-1. Download `dataflow_<version>.zip` from the releases page, or add the repository manifest
-   URL under **Dashboard > Plugins > Repositories** and install **Data Flow** from the catalog.
+1. Add the plugin repository under **Dashboard > Plugins > Repositories** and install
+   **Data Flow** from the catalog:
+
+   ```
+   https://raw.githubusercontent.com/gabeseltzer/jellyfin-data-flow-plugin/main/manifest.json
+   ```
+
+   Or download `dataflow_<version>.zip` from the
+   [releases page](https://github.com/gabeseltzer/jellyfin-data-flow-plugin/releases).
 2. For a manual install, extract the zip into `<jellyfin data>/plugins/DataFlow_<version>/`
    and restart Jellyfin.
 3. Reload the web client (the script tag is injected into `index.html` on the fly; the file on

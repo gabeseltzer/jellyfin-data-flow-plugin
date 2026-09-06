@@ -6,6 +6,9 @@ on:
     tags: ['v*']
   pull_request:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -35,3 +38,15 @@ jobs:
           files: |
             artifacts/*.zip
             artifacts/manifest.json
+      - name: Publish manifest to main
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          cp artifacts/manifest.json /tmp/manifest.json
+          git fetch origin main
+          git checkout main
+          cp /tmp/manifest.json manifest.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manifest.json
+          git commit -m "Publish plugin manifest for ${GITHUB_REF_NAME}" || echo "manifest unchanged"
+          git push origin main
