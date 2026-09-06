@@ -5,7 +5,7 @@
   <title>Data Flow</title>
 </head>
 <body>
-  <div id="DataFlowConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-checkbox,emby-select">
+  <div id="DataFlowConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-checkbox">
     <div data-role="content">
       <div class="content-primary">
         <form id="DataFlowConfigForm">
@@ -37,10 +37,10 @@
             <div class="fieldDescription">Throughput within this much below the required bitrate is shown amber; further below is red. Default 20.</div>
           </div>
 
-          <div class="selectContainer">
-            <label class="selectLabel" for="NetworkInterfaces">Network interfaces for server totals</label>
-            <select id="NetworkInterfaces" name="NetworkInterfaces" is="emby-select" multiple size="5"></select>
-            <div class="fieldDescription">Leave nothing selected to include every interface that is up and not loopback. Hold Ctrl/Cmd to select several.</div>
+          <div class="checkboxList paperList" style="padding: .5em 1em;">
+            <h3 class="checkboxListLabel" style="margin: .5em 0;">Network interfaces for server totals</h3>
+            <div id="NetworkInterfaces"></div>
+            <div class="fieldDescription">Leave all unchecked to include every interface that is up and not loopback.</div>
           </div>
 
           <div class="checkboxContainer checkboxContainer-withDescription">
@@ -65,25 +65,37 @@
         var pluginId = 'b7e3d5a2-4c1f-4e8a-9b6d-2f0a7c9e1d3b';
         var page = document.querySelector('#DataFlowConfigPage');
 
+        function addInterface(container, name, text, checked) {
+          var label = document.createElement('label');
+          label.className = 'emby-checkbox-label';
+          var input = document.createElement('input');
+          input.type = 'checkbox';
+          input.setAttribute('is', 'emby-checkbox');
+          input.className = 'nicCheckbox';
+          input.value = name;
+          input.checked = checked;
+          var span = document.createElement('span');
+          span.textContent = text;
+          label.appendChild(input);
+          label.appendChild(span);
+          var wrap = document.createElement('div');
+          wrap.className = 'checkboxContainer';
+          wrap.appendChild(label);
+          container.appendChild(wrap);
+        }
+
         function fillInterfaces(selected) {
-          var select = page.querySelector('#NetworkInterfaces');
+          var container = page.querySelector('#NetworkInterfaces');
           return ApiClient.getJSON(ApiClient.getUrl('DataFlow/Interfaces')).then(function (list) {
-            select.innerHTML = '';
+            container.innerHTML = '';
             list.forEach(function (nic) {
-              var opt = document.createElement('option');
-              opt.value = nic.name;
-              opt.textContent = nic.name + (nic.up ? '' : ' (down)') + (nic.description && nic.description !== nic.name ? ' - ' + nic.description : '');
-              opt.selected = selected.indexOf(nic.name) >= 0;
-              select.appendChild(opt);
+              var text = nic.name + (nic.up ? '' : ' (down)') + (nic.description && nic.description !== nic.name ? ' - ' + nic.description : '');
+              addInterface(container, nic.name, text, selected.indexOf(nic.name) >= 0);
             });
             // Keep configured names that are not currently present so they are not silently dropped.
             selected.forEach(function (name) {
               if (!list.some(function (nic) { return nic.name === name; })) {
-                var opt = document.createElement('option');
-                opt.value = name;
-                opt.textContent = name + ' (not found)';
-                opt.selected = true;
-                select.appendChild(opt);
+                addInterface(container, name, name + ' (not found)', true);
               }
             });
           }).catch(function () { /* non-admin or endpoint unavailable */ });
@@ -115,7 +127,7 @@
             config.MarginPercent = parseInt(page.querySelector('#MarginPercent').value, 10);
             if (isNaN(config.MarginPercent)) { config.MarginPercent = 20; }
             config.EnableBrowserMeasurement = page.querySelector('#EnableBrowserMeasurement').checked;
-            config.NetworkInterfaces = Array.prototype.slice.call(page.querySelector('#NetworkInterfaces').selectedOptions).map(function (o) { return o.value; });
+            config.NetworkInterfaces = Array.prototype.slice.call(page.querySelectorAll('#NetworkInterfaces .nicCheckbox:checked')).map(function (o) { return o.value; });
             return ApiClient.updatePluginConfiguration(pluginId, config);
           }).then(function (result) {
             Dashboard.processPluginConfigurationUpdateResult(result);

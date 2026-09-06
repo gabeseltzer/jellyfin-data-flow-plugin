@@ -129,9 +129,44 @@ Scripts: `scripts/post-create.sh` (one-time setup, generates test media),
 | `IStartupFilter` ordering changes in Jellyfin 12 | Same approach shipped by JS Injector for 12; keep the jf12 build target and CI matrix. |
 | Users on native clients expect the feature | README states web-only scope up front. |
 
-## Open questions for the user
+## Status (2026-09-06)
 
-1. Docker available locally for a test Jellyfin, or should we target an existing install?
-2. Is client upload worth a series at all, or should it be tooltip-only to reduce clutter?
-   Plan assumes a thin series that is off by default in the legend.
-3. Should the default window be 2 min (plan) or match the visible-overlay time only?
+| Phase | State |
+|---|---|
+| 0 toolchain | done: devcontainer, Jellyfin 10.11.11 wizard completed via API (`admin`/`admin`), `/media` Movies library |
+| 1 skeleton + injection | done: `IStartupFilter` + `ScriptInjectionMiddleware`, `/DataFlow/client.js` with ETag, disk `index.html` untouched |
+| 2 measurement | done: `RingBuffer`, `ThroughputStore`, `ByteCountingMiddleware` (SendFileAsync verified), 1 Hz sampler, `Samples`/`Config`/`Interfaces`; 76 xunit tests incl. TestServer integration |
+| 3 client panel | done: acceptance criteria 1-6 verified with a Playwright script (`scripts/e2e/`) in real Chrome, direct play and forced-transcode HLS with a 0.5 Mbps throttle (buffered -> starved -> OK) |
+| 4 config page | done (checkbox list for NICs; File Transformation registration not implemented, see below) |
+| 5 verification + release | perf numbers in `docs/PERF.md`; `build.yaml`, `scripts/package.sh`, GitHub Actions workflow; not yet tagged |
+
+Deviations from `SPEC.md`, all deliberate:
+
+- The colour-coded fill and the Client download legend value use the **5 s trailing mean**, not
+  the raw 1 s bucket. HLS buckets alternate between a full segment and zero, so the raw value
+  reads as a permanent "0 bps" and the fill is invisible. Raw buckets remain the plotted line
+  and are in the tooltip.
+- A fifth status **buffered** exists: when throughput is below the requirement but the player
+  has 8 s or more buffered ahead, the panel says so instead of "starved". Without it, every
+  HLS idle gap and every progressive-download pause (Chrome idles at 10-30 s of buffer) turns
+  the badge red. Buffer health is recorded per bucket so past colours do not change later.
+- The y-axis scales on the 92nd percentile of visible values (times 1.25, at least 1.3x the
+  required bitrate) with clipping. A single buffer-fill burst at LAN speed (150 Mbps seen in
+  testing) otherwise flattens the whole graph.
+- `client.js` + `client.css` is ~29 KB unminified, over the 25 KB budget in SPEC §8. No
+  dependencies; the extra is the browser-side fallback and per-bucket buffer tracking.
+- File Transformation plugin integration (SPEC §6 optional fallback) was skipped: the
+  middleware path works on 10.11 without it and the reflection contract would need testing
+  against that plugin's releases.
+
+## Open questions for the user (resolved)
+
+1. Docker: yes, via the devcontainer's second compose service.
+2. Client upload: thin series, off by default in the legend, still in the tooltip.
+3. Default window: 2 min, user can cycle 1/2/5 (persisted in `localStorage`).
+
+## Next
+
+- Tag v0.1.0 once the repository URL in `scripts/package.sh` (`REPO_URL`) is final.
+- Jellyfin 12 build target (`net10.0`, `Jellyfin.Controller` 12.x) and CI matrix.
+- Firefox pass of acceptance criteria 1-6 (only Chrome was automated).

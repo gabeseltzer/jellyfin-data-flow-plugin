@@ -1,0 +1,18 @@
+---
+# jprm (Jellyfin Plugin Repository Manager) build manifest
+name: "Data Flow"
+guid: "b7e3d5a2-4c1f-4e8a-9b6d-2f0a7c9e1d3b"
+version: "0.1.0.0"
+targetAbi: "10.11.0.0"
+framework: "net9.0"
+owner: "gabriel-seltzer"
+overview: "Live network throughput graph in Playback Info."
+description: >
+  Adds a live network throughput graph to the web client's Playback Info overlay:
+  client download/upload for the current playback, server-wide upload/download, a
+  rolling average, and colour coding against the bitrate the video needs.
+category: "General"
+artifacts:
+  - "Jellyfin.Plugin.DataFlow.dll"
+changelog: |
+  Initial release.
