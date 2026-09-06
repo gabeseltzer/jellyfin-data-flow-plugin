@@ -34,12 +34,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await page.mouse.move(10, 790); await sleep(4000);
   const closed = await window_('overlay closed');
   // open Playback Info
-  await page.mouse.move(640, 400); await sleep(300); await page.click('.btnVideoOsdSettings');
+  await page.mouse.move(600, 400); await sleep(200); await page.mouse.move(660, 420); await page.waitForSelector('.btnVideoOsdSettings', { state: 'visible', timeout: 15000 }); await page.click('.btnVideoOsdSettings');
   await page.waitForSelector('.actionSheet [data-id="stats"]', { timeout: 10000 }); await page.click('.actionSheet [data-id="stats"]');
   await page.waitForSelector('.playerStats .dataFlow', { timeout: 15000 }); await page.mouse.move(10, 790); await sleep(4000);
   const open = await window_('overlay open (Data Flow enabled)');
   // hide our panel to isolate jellyfin-web's own stats cost
-  await page.evaluate(() => { const v = window.__jellyfinDataFlow.debug().view; v.visible = false; clearTimeout(v.pollTimer); clearTimeout(v.sessionTimer); v.pollTimer = null; v.sessionTimer = null; document.querySelector('.dataFlow').hidden = true; });
+  console.log('overlay state:', await page.evaluate(() => { const r = document.querySelector('.playerStats'); const d = window.__jellyfinDataFlow.debug(); return `playerStats=${!!r} hide=${r && r.classList.contains('hide')} panelAttached=${!!document.querySelector('.dataFlow')} visible=${d.view.visible} len=${d.data.len} failures=${d.data.failures} video=${!!document.querySelector('video.htmlvideoplayer')}`; }));
+  await page.evaluate(() => { const v = window.__jellyfinDataFlow.debug().view; v.visible = false; clearTimeout(v.pollTimer); clearTimeout(v.sessionTimer); v.pollTimer = null; v.sessionTimer = null; if (v.panel) { v.panel.hidden = true; } });
   await sleep(2000);
   const openNoDf = await window_('overlay open (Data Flow suspended)');
   console.log(`Data Flow cost ≈ ${(open - openNoDf).toFixed(2)}% of one core (overlay open vs open-without-panel); overlay itself ≈ ${(openNoDf - closed).toFixed(2)}%`);
