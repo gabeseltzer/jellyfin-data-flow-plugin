@@ -1,0 +1,21 @@
+[
+  {
+    "guid": "b7e3d5a2-4c1f-4e8a-9b6d-2f0a7c9e1d3b",
+    "name": "Data Flow",
+    "description": "Live network throughput graph in the web client Playback Info overlay.",
+    "overview": "Live network throughput graph in Playback Info.",
+    "owner": "gabeseltzer",
+    "category": "General",
+    "imageUrl": "",
+    "versions": [
+      {
+        "version": "0.1.0.0",
+        "changelog": "Initial release.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/gabeseltzer/jellyfin-data-flow-plugin/releases/download/v0.1.0/dataflow_0.1.0.0.zip",
+        "checksum": "91e04d1504c84bfa4a8880953fe5649c",
+        "timestamp": "2026-09-06T01:00:44Z"
+      }
+    ]
+  }
+]
