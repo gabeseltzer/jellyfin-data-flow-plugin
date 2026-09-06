@@ -1,2 +1,32 @@
-/* Jellyfin Data Flow panel styles (filled in during phase 3). */
-.dataFlow { display: block; }
+/* Jellyfin Data Flow: panel appended to the Playback Info overlay (.playerStats-content). */
+.dataFlow { max-width: 50em; padding: 0 3em 1em 1em; box-sizing: border-box; -webkit-user-select: none; user-select: none; }
+[dir="rtl"] .dataFlow { padding: 0 1em 1em 3em; }
+.playerStats-content-tv .dataFlow { padding-top: 0; }
+.dataFlow-header { align-items: baseline; }
+.dataFlow-header .playerStats-stat-value { display: flex; gap: .6em; align-items: baseline; flex-wrap: wrap; }
+.dataFlow-btn { background: none; border: 0; padding: 0; margin: 0; color: inherit; font: inherit; cursor: pointer; border-bottom: 1px dotted #888; }
+.dataFlow-btn:hover, .dataFlow-btn:focus { color: #fff; outline: none; border-bottom-color: #fff; }
+.dataFlow-badge { display: inline-block; padding: 0 .5em; border-radius: .25em; font-weight: 500; color: #111; background: #888; min-width: 3.5em; text-align: center; }
+.dataFlow-badge-ok { background: #43a047; color: #fff; }
+.dataFlow-badge-marginal { background: #ffb300; color: #111; }
+.dataFlow-badge-starved { background: #e53935; color: #fff; }
+.dataFlow-badge-buffered { background: #2e7d32; color: #fff; }
+.dataFlow-badge-paused, .dataFlow-badge-none { background: #616161; color: #eee; }
+.dataFlow-src { color: #aaa; font-size: 85%; }
+.dataFlow-body { margin: .4em 0 0 1em; }
+[dir="rtl"] .dataFlow-body { margin: .4em 1em 0 0; }
+.dataFlow-graph { position: relative; height: 7em; width: 100%; touch-action: pan-y; }
+.playerStats-tv .dataFlow-graph { height: 5em; }
+.dataFlow-graph canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.dataFlow-tooltip { position: absolute; top: 0; pointer-events: none; background: rgba(0, 0, 0, .85); color: #eee; border: 1px solid #555; border-radius: .3em; padding: .3em .5em; font-size: 90%; white-space: nowrap; line-height: 1.35; z-index: 2; }
+.dataFlow-tooltip b { color: #fff; font-weight: 500; }
+.dataFlow-tooltip i { display: inline-block; width: .7em; height: .7em; border-radius: .15em; margin-right: .35em; vertical-align: -.05em; }
+.dataFlow-legend { display: flex; flex-wrap: wrap; gap: .15em 1.1em; margin-top: .3em; color: #ddd; }
+.dataFlow-legend-item { display: inline-flex; align-items: baseline; gap: .35em; background: none; border: 0; padding: 0; margin: 0; color: inherit; font: inherit; }
+.dataFlow-legend-item[data-series] { cursor: pointer; }
+.dataFlow-legend-item i { display: inline-block; width: .8em; height: .5em; border-radius: .1em; align-self: center; }
+.dataFlow-legend-item .lbl { color: #bbb; }
+.dataFlow-legend-item .val { font-variant-numeric: tabular-nums; min-width: 4.5em; }
+.dataFlow-legend-item.off { opacity: .45; }
+.dataFlow-legend-item.off i { background: transparent !important; box-shadow: inset 0 0 0 1px currentColor; }
+.dataFlow-note { color: #aaa; font-size: 85%; margin-top: .2em; }

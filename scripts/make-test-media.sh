@@ -25,6 +25,8 @@ gen() { # name bitrate_kbps resolution
 gen "Low Bitrate Test"   1500  1280x720
 gen "Mid Bitrate Test"   6000  1920x1080
 gen "High Bitrate Test" 20000  1920x1080
+# Longer clip for throttling tests that need several minutes of playback.
+DUR=480 gen "Long Mid Bitrate Test" 6000 1920x1080
 
 touch media/.generated
 echo "Done."
