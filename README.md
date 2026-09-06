@@ -96,3 +96,8 @@ scripts/package.sh                     # artifacts/dataflow_<version>.zip + mani
 The e2e script uses real Chrome rather than the Playwright Chromium build because the latter
 has no H.264 decoder. Chrome does not apply DevTools network throttling to `<video>` element
 loads, so the throttle test forces a transcode (hls.js uses XHR, which is throttled).
+
+## License
+
+GPL-3.0-or-later. See [LICENSE](LICENSE). Jellyfin and its plugin template are GPL licensed
+as well.
