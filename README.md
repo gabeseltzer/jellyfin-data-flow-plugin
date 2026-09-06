@@ -1,5 +1,9 @@
 # Jellyfin Data Flow
 
+> **Disclaimer:** this is a vibe-coded, AI-generated project. The code, tests, and documentation
+> were written by an AI assistant (Claude) working from a human-written spec, with a human reviewing
+> and steering. Use it at your own risk and review the code before running it on a server you care about.
+
 A Jellyfin server plugin that adds a live network throughput graph to the web client's
 **Playback Info** overlay: client download/upload for the current playback, server-wide
 upload/download, a rolling average, and colour coding against the bitrate the video needs.

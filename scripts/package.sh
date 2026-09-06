@@ -7,7 +7,7 @@ CONFIG=${1:-Release}
 PROJECT=Jellyfin.Plugin.DataFlow
 VERSION=$(grep -oP '(?<=<AssemblyVersion>)[^<]+' "$PROJECT/$PROJECT.csproj")
 ABI=$(grep -oP '(?<=targetAbi: ")[^"]+' build.yaml)
-REPO_URL=${REPO_URL:-https://github.com/gabriel-seltzer/jellyfin-data-flow-plugin}
+REPO_URL=${REPO_URL:-https://github.com/gabeseltzer/jellyfin-data-flow-plugin}
 OUT=artifacts; ZIP="dataflow_${VERSION}.zip"
 DLL="$PROJECT/bin/$CONFIG/net9.0/$PROJECT.dll"
 [ -f "$DLL" ] || dotnet build "$PROJECT/$PROJECT.csproj" -c "$CONFIG" --nologo -v quiet
@@ -26,7 +26,7 @@ jq -n --arg v "$VERSION" --arg abi "$ABI" --arg sum "$CHECKSUM" --arg ts "$TIMES
   name: "Data Flow",
   description: "Live network throughput graph in the web client Playback Info overlay.",
   overview: "Live network throughput graph in Playback Info.",
-  owner: "gabriel-seltzer",
+  owner: "gabeseltzer",
   category: "General",
   imageUrl: "",
   versions: [{
