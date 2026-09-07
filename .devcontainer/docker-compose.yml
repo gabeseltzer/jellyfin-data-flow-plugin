@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ..:/workspaces/jellyfin-data-flow-plugin:cached
+      - jellyfin-plugin-nuget:/home/vscode/.nuget/packages
       # Share the host's Claude Code login, settings, and memory with the container.
       # Both paths must exist on the host (they do once you've run `claude` once).
       - ~/.claude:/home/vscode/.claude
@@ -30,3 +31,7 @@ services:
     environment:
       JELLYFIN_PublishedServerUrl: http://localhost:8096
     restart: unless-stopped
+
+volumes:
+  jellyfin-plugin-nuget:
+    name: jellyfin-plugin-nuget
