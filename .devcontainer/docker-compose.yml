@@ -6,10 +6,15 @@ services:
     volumes:
       - ..:/workspaces/jellyfin-data-flow-plugin:cached
       - jellyfin-plugin-nuget:/home/vscode/.nuget/packages
-      # Share the host's Claude Code login, settings, and memory with the container.
-      # Both paths must exist on the host (they do once you've run `claude` once).
+      # Share the host's Claude Code settings and memory with the container.
+      # Must exist on the host (it does once you've run `claude` once).
+      #
+      # Only ~/.claude is shared. Do NOT bind-mount ~/.claude.json: it records
+      # installMethod, which describes the machine rather than the account, so a
+      # host native install and the container's npm-global install overwrite each
+      # other's value on every update. CLAUDE_CONFIG_DIR below keeps the
+      # container's own .claude.json inside the mount, separate from the host's.
       - ~/.claude:/home/vscode/.claude
-      - ~/.claude.json:/home/vscode/.claude.json
     working_dir: /workspaces/jellyfin-data-flow-plugin
     command: sleep infinity
     environment:
@@ -17,6 +22,8 @@ services:
       DOTNET_NOLOGO: "1"
       JELLYFIN_URL: http://jellyfin:8096
       JELLYFIN_CONTAINER: jellyfin-dataflow-dev
+      # Must match the ~/.claude mount target above, or Claude Code signs out on rebuild.
+      CLAUDE_CONFIG_DIR: /home/vscode/.claude
 
   jellyfin:
     image: jellyfin/jellyfin:10.11

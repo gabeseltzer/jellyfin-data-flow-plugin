@@ -11,6 +11,13 @@ if [ ! -w "$HOME/.nuget/packages" ]; then
   sudo chown -R "$(id -u):$(id -g)" "$HOME/.nuget"
 fi
 
+# The claude-code feature may install as root; `claude update` then fails with
+# insufficient permissions. Hand the package dir to the dev user.
+claude_pkg="$(npm root -g 2>/dev/null)/@anthropic-ai"
+if [ -d "$claude_pkg" ] && [ ! -w "$claude_pkg" ]; then
+  sudo chown -R "$(id -u):$(id -g)" "$claude_pkg"
+fi
+
 echo "dotnet SDKs:"
 dotnet --list-sdks
 
