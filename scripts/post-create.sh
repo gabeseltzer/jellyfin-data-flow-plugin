@@ -6,9 +6,12 @@ cd "$(dirname "$0")/.."
 mkdir -p dist/plugins media .dev/jellyfin/config .dev/jellyfin/cache
 
 # The shared NuGet named volume is created root-owned on first mount; hand it to the dev user.
+# Test $HOME/.nuget itself, not .nuget/packages: Docker creates the *parent* root-owned when it
+# mounts the volume, while the volume's own contents already belong to the dev user. NuGet writes
+# $HOME/.nuget/NuGet/NuGet.Config, so a root-owned parent fails restore even though packages/ is fine.
 mkdir -p "$HOME/.nuget"
-if [ ! -w "$HOME/.nuget/packages" ]; then
-  sudo chown -R "$(id -u):$(id -g)" "$HOME/.nuget"
+if [ ! -w "$HOME/.nuget" ]; then
+  sudo chown "$(id -u):$(id -g)" "$HOME/.nuget"
 fi
 
 # The ~/.claude bind mount is easy to get wrong: if the host path did not exist
