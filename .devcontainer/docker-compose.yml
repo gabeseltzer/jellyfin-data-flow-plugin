@@ -1,3 +1,9 @@
+# Compose derives the project name from the containing directory, which is
+# `.devcontainer` in every repo using this layout -- so a sibling plugin repo's
+# `dev` service would collide with this one and VS Code would attach to the
+# wrong container ("workspace does not exist"). Name the project explicitly.
+name: jellyfin-data-flow-plugin
+
 services:
   dev:
     build:
@@ -7,14 +13,19 @@ services:
       - ..:/workspaces/jellyfin-data-flow-plugin:cached
       - jellyfin-plugin-nuget:/home/vscode/.nuget/packages
       # Share the host's Claude Code settings and memory with the container.
-      # Must exist on the host (it does once you've run `claude` once).
+      # The path must exist on the host (it does once you've run `claude` once).
+      # CLAUDE_HOST_HOME overrides where it lives. Needed when VS Code runs Dev
+      # Containers inside WSL (dev.containers.executeInWSL): there `~` is the WSL
+      # home, not your Windows profile, and Docker silently creates empty root-owned
+      # placeholders that Claude cannot write to. Set it in .devcontainer/.env
+      # (gitignored), e.g. CLAUDE_HOST_HOME=/mnt/c/Users/<you>
       #
-      # Only ~/.claude is shared. Do NOT bind-mount ~/.claude.json: it records
+      # The host's ~/.claude.json is deliberately NOT mounted: it records
       # installMethod, which describes the machine rather than the account, so a
       # host native install and the container's npm-global install overwrite each
       # other's value on every update. CLAUDE_CONFIG_DIR below keeps the
       # container's own .claude.json inside the mount, separate from the host's.
-      - ~/.claude:/home/vscode/.claude
+      - ${CLAUDE_HOST_HOME:-~}/.claude:/home/vscode/.claude
     working_dir: /workspaces/jellyfin-data-flow-plugin
     command: sleep infinity
     environment:
@@ -26,7 +37,7 @@ services:
       CLAUDE_CONFIG_DIR: /home/vscode/.claude
 
   jellyfin:
-    image: jellyfin/jellyfin:10.11
+    image: jellyfin/jellyfin:12.0
     container_name: jellyfin-dataflow-dev
     ports:
       - "8096:8096"

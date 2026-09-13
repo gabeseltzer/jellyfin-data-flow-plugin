@@ -12,3 +12,6 @@ node_modules/
 dist/
 media/*
 !media/.gitkeep
+
+# Local devcontainer overrides (e.g. CLAUDE_HOST_HOME)
+.devcontainer/.env
