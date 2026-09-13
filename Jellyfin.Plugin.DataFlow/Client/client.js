@@ -4,7 +4,14 @@
 (function () {
   'use strict';
   if (window.__jellyfinDataFlow) { return; }
-  var DF = window.__jellyfinDataFlow = { version: '0.1.0' };
+  // The server stamps its own assembly version onto the injected tag (client.js?v=...).
+  // Read it back rather than hard-coding it here: this string is the cache-buster for
+  // client.css, so a stale literal would serve old CSS to every upgraded browser.
+  var DF = window.__jellyfinDataFlow = { version: (function () {
+    var tag = document.querySelector('script[data-dataflow]');
+    var m = tag && /[?&]v=([^&]+)/.exec(tag.getAttribute('src') || '');
+    return m ? decodeURIComponent(m[1]) : 'dev';
+  })() };
 
   var STR = {
     title: 'Data Flow', clientDown: 'Client ↓', clientUp: 'Client ↑', serverUp: 'Server ↑',

@@ -10,8 +10,21 @@ upload/download, a rolling average, and colour coding against the bitrate the vi
 
 ![Data Flow panel during direct play](docs/images/panel-directplay.png)
 
-Status: v0.1 feature complete for Jellyfin 10.11.x. See [SPEC.md](SPEC.md), [PLAN.md](PLAN.md),
-[docs/RESEARCH.md](docs/RESEARCH.md) and [docs/PERF.md](docs/PERF.md).
+Status: v0.2 builds against Jellyfin 12.0 (`net10.0`, ABI `12.0.0.0`). Feature complete; 0.2.0
+is a straight retarget of 0.1.0 with no behaviour changes. See [SPEC.md](SPEC.md),
+[PLAN.md](PLAN.md), [docs/RESEARCH.md](docs/RESEARCH.md) and [docs/PERF.md](docs/PERF.md).
+
+### Server compatibility
+
+| Plugin | Jellyfin server | Target framework |
+| --- | --- | --- |
+| 0.2.x | 12.0.x | `net10.0` |
+| 0.1.x | 10.11.x | `net9.0` |
+
+Jellyfin 12 moved the server to .NET 10 and bumped the plugin ABI, so one build cannot serve
+both. The repository manifest keeps both entries and Jellyfin picks the one matching its ABI:
+a 10.11 server is still offered 0.1.0. If you are upgrading the server, uninstall the plugin
+first, upgrade Jellyfin, then reinstall — the 0.1.0 DLL will not load under 12.0.
 
 ## What you get
 
@@ -85,8 +98,8 @@ the browser-side measurement fallback.
 
 ## Development
 
-Everything runs in the VS Code devcontainer (`.devcontainer/`): a .NET 9 SDK container plus a
-Jellyfin 10.11 container with `dist/plugins` mounted as its plugin directory and `media/` as a
+Everything runs in the VS Code devcontainer (`.devcontainer/`): a .NET 10 SDK container plus a
+Jellyfin 12.0 container with `dist/plugins` mounted as its plugin directory and `media/` as a
 Movies library. First run: `scripts/post-create.sh` generates synthetic test clips at known
 bitrates; the Jellyfin at http://localhost:8096 is set up with user `admin` / password `admin`.
 

@@ -30,7 +30,13 @@ public sealed class SamplerHostedService : BackgroundService
     /// <inheritdoc />
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("DataFlow sampler started ({History}s history)", _store.HistorySeconds);
+        // Guarded because CA1873 (new in the .NET 10 analyzers) rejects non-constant message
+        // arguments that would be evaluated even when the level is disabled.
+        if (_logger.IsEnabled(LogLevel.Information))
+        {
+            _logger.LogInformation("DataFlow sampler started ({History}s history)", _store.HistorySeconds);
+        }
+
         using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(ThroughputStore.IntervalMs));
         try
         {

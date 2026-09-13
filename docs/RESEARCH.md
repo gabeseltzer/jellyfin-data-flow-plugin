@@ -4,13 +4,14 @@
 
 - Plugins are .NET class libraries loaded by the server via `AssemblyLoadContext`. Template:
   https://github.com/jellyfin/jellyfin-plugin-template
-- Current template targets **net9.0**, references `Jellyfin.Controller` and `Jellyfin.Model`
-  10.11.x with `<ExcludeAssets>runtime</ExcludeAssets>`. `targetAbi` in `build.yaml` is
-  `10.11.0.0`. Latest 10.11 NuGet at time of writing: 10.11.11. Pinning the package to
-  `10.11.0` lets one DLL load across all 10.11.x (a newer host satisfies an older ref).
-- Jellyfin 12 (net10.0) is in RC; the JS Injector plugin already multi-targets with an
-  MSBuild property switch (`JellyfinTarget=jf10|jf12`). Plugins are "strictly one major
-  version compatible", so ship separate artifacts per version.
+- This plugin targets **net10.0** and references `Jellyfin.Controller` / `Jellyfin.Model`
+  `12.0.0` with `<ExcludeAssets>runtime</ExcludeAssets>`. `targetAbi` in `build.yaml` is
+  `12.0.0.0`. Pinning the package to the `.0` of the line lets one DLL load across the
+  whole line (a newer host satisfies an older ref).
+- Plugins are "strictly one major version compatible", so ship separate artifacts per
+  server major. 0.1.x (net9.0 / ABI 10.11.0.0) stays the 10.11 build; 0.2.x is the 12.0
+  build. `scripts/package.sh` merges new versions into the existing `manifest.json` rather
+  than replacing it, so both entries stay published and Jellyfin picks by ABI.
 - Required pieces: `Plugin : BasePlugin<PluginConfiguration>` (Name, Id GUID, ctor with
   `IApplicationPaths`, `IXmlSerializer`), `PluginConfiguration : BasePluginConfiguration`,
   optional embedded `configPage.html` exposed via `IHasWebPages`.
@@ -21,7 +22,7 @@
   (`GetApiPluginAssemblies()` feeds `AddJellyfinApi`). Use `[Authorize]` / `[AllowAnonymous]`.
 - Packaging: `meta.json` + DLL in a zip; `manifest.json` for a plugin repository. Manual
   install: drop a folder into `<data>/plugins/<Name_version>/` and restart.
-- Local machine has .NET SDKs 6/7/8 only; **.NET 9 SDK must be installed** to build.
+- Local machine has .NET SDKs 6/7/8 only; **.NET 10 SDK must be installed** to build.
 
 ## Getting JavaScript into jellyfin-web
 
@@ -102,3 +103,32 @@ Serving the script: a plugin controller endpoint with `[AllowAnonymous]` returni
 - https://github.com/jellyfin/jellyfin (Jellyfin.Server/Startup.cs, ApplicationHost.cs, VideosController.cs, DynamicHlsController.cs, SessionController.cs, TranscodingInfo.cs)
 - https://www.nuget.org/packages/Jellyfin.Controller
 - https://gist.github.com/IDisposable/31b194e3f6dc5acbb0e08009b6c800bd (multi-ABI build recipe)
+
+## Jellyfin 12.0 retarget (2026-09-13)
+
+Jellyfin 12.0 shipped 2026-09-08. The version scheme changed from `10.X.Y` to `X.Y`, so the
+next line after 10.11 is 12.0 (10.12 was skipped). What actually changed for this plugin:
+
+- **Server moved to .NET 10.** Plugins must retarget `net10.0` and rebuild; the `global.json`
+  in jellyfin/jellyfin pins SDK `10.0.0` with `rollForward: latestMinor`.
+- **`targetAbi` is now `12.0.0.0`** and `Jellyfin.Controller` / `Jellyfin.Model` are `12.0.0`.
+- **No API break for anything this plugin uses.** Verified against tag `v12.0`:
+  - `IPluginServiceRegistrator.RegisterServices(IServiceCollection, IServerApplicationHost)`
+    is byte-identical to 10.11.
+  - `IHasWebPages` / `PluginPageInfo` are still `MediaBrowser.Model.Plugins`, `BasePlugin<T>`
+    still `MediaBrowser.Common.Plugins`.
+  - `Policies.RequiresElevation` still exists (in `MediaBrowser.Common.Api`); the string
+    literal the controller uses is unchanged.
+  - `IStartupFilter` registration and ASP.NET middleware are framework, not Jellyfin, API.
+- **Media route templates are unchanged**, so `MediaRouteMatcher` still matches:
+  `Videos/{id}/stream[.container]`, `Videos/{id}/{master,main,live}.m3u8`,
+  `{Videos,Audio}/{id}/hls1/{playlistId}/{segmentId}.{container}`.
+- **jellyfin-web still uses the same hooks**: `.playerStats`, `.playerStats-content`,
+  `.playerStats-tv` and the `hide` class are unchanged in `src/components/playerstats/`, and
+  `ServerConnections.js` still assigns `window.ApiClient`. The 12.0 diff to `playerstats.js`
+  only regroups the transcode/target labels it renders; the plugin reads bitrate from the
+  `/Sessions` API rather than scraping the DOM, so it is unaffected.
+
+The 12.0 breaking changes that *do* affect plugins — `IItemRepository` (alternate versions and
+playlist contents moved out of the parent item), `IUserManager`, `IAuthenticationProvider`,
+the new `ISearchEngine` — are all unused here.

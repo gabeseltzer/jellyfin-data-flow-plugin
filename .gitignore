@@ -5,6 +5,8 @@ obj/
 .vs/
 .idea/
 artifacts/
+# .NET 10 SDK file-based-app cache; the SDK creates it in the repo root.
+dotnet/
 *.zip
 TestResults/
 node_modules/

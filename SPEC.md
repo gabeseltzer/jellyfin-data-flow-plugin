@@ -15,8 +15,9 @@ rate is enough to sustain the video, and what the server's overall network load 
 
 - Jellyfin **web client** (jellyfin-web) served by the Jellyfin server, including the
   desktop app and any client that embeds jellyfin-web (e.g. Jellyfin Media Player).
-- Jellyfin server **10.11.x** (.NET 9) as the primary target; **12.x** (.NET 10) as a
-  secondary build target once it stabilises.
+- Jellyfin server **12.0.x** (.NET 10) as the primary target, built as plugin 0.2.x.
+  **10.11.x** (.NET 9) stays supported through the already-published 0.1.x build; the two
+  ABIs cannot share a single DLL.
 - Video and audio playback via direct play, direct stream, remux, and transcode (HLS and
   progressive).
 
@@ -215,5 +216,5 @@ Other:
 5. Transcode a file: required-bitrate line matches `TranscodingInfo.Bitrate`.
 6. Close overlay: DevTools shows no further `/DataFlow` requests and no timers.
 7. Server CPU and memory within budgets under 10 concurrent playbacks.
-8. Plugin loads on Jellyfin 10.11.x without "NotSupported" status; disabling the plugin
+8. Plugin loads on Jellyfin 12.0.x without "NotSupported" status; disabling the plugin
    leaves `index.html` untouched (nothing was written to disk).

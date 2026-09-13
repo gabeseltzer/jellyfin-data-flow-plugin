@@ -8,7 +8,7 @@ is feasible. Each phase ends in a runnable, committed state.
 ```
 Jellyfin.Plugin.DataFlow.sln
 Jellyfin.Plugin.DataFlow/
-  Jellyfin.Plugin.DataFlow.csproj      net9.0, Jellyfin.Controller 10.11.0 (jf12 switch later)
+  Jellyfin.Plugin.DataFlow.csproj      net10.0, Jellyfin.Controller 12.0.0 (ABI 12.0.0.0)
   Plugin.cs                            BasePlugin<PluginConfiguration>, IHasWebPages
   PluginServiceRegistrator.cs          DI: IStartupFilter, IHostedService, ThroughputStore
   Configuration/PluginConfiguration.cs
@@ -24,7 +24,7 @@ Jellyfin.Plugin.DataFlow/
   Client/client.css
 Jellyfin.Plugin.DataFlow.Tests/        xunit: RingBuffer, ThroughputStore, route matcher, index.html rewrite
 build.yaml, meta.json template, .editorconfig, .gitignore, README.md
-scripts/dev-jellyfin.ps1               run Jellyfin 10.11 in Docker with plugin dir mounted
+scripts/dev-jellyfin.ps1               run Jellyfin 12.0 in Docker with plugin dir mounted
 ```
 
 ## Phase 0: toolchain (½ day) — devcontainer
@@ -32,10 +32,10 @@ scripts/dev-jellyfin.ps1               run Jellyfin 10.11 in Docker with plugin 
 Decision (2026-09-05): all development happens in a VS Code devcontainer; no .NET SDK on
 the host. `.devcontainer/docker-compose.yml` runs two services:
 
-- `dev`: `mcr.microsoft.com/devcontainers/dotnet:1-9.0` + ffmpeg/jq/curl, repo mounted at
+- `dev`: `mcr.microsoft.com/devcontainers/dotnet:1-10.0` + ffmpeg/jq/curl, repo mounted at
   `/workspaces/jellyfin-data-flow-plugin`, Docker socket via `docker-outside-of-docker`
   so scripts can restart the Jellyfin container.
-- `jellyfin`: `jellyfin/jellyfin:10.11`, port 8096 forwarded to the host browser,
+- `jellyfin`: `jellyfin/jellyfin:12.0`, port 8096 forwarded to the host browser,
   `dist/plugins` mounted at `/config/plugins`, `media/` mounted read-only, state in `.dev/`.
 
 Scripts: `scripts/post-create.sh` (one-time setup, generates test media),
