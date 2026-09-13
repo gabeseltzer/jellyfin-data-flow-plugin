@@ -11,6 +11,18 @@ if [ ! -w "$HOME/.nuget/packages" ]; then
   sudo chown -R "$(id -u):$(id -g)" "$HOME/.nuget"
 fi
 
+# The ~/.claude bind mount is easy to get wrong: if the host path did not exist
+# when Compose started, Docker creates an empty root-owned directory instead and
+# Claude Code cannot log in. Say so plainly rather than letting it fail later.
+if [ ! -w "$HOME/.claude" ]; then
+  echo
+  echo "WARNING: $HOME/.claude is not writable by $(id -un) -- Claude Code will not be able to log in."
+  echo "  The host path for the mount probably does not exist, so Docker created an empty"
+  echo "  root-owned placeholder. If VS Code runs Dev Containers inside WSL, set"
+  echo "  CLAUDE_HOST_HOME in .devcontainer/.env (see .env.example), then rebuild."
+  echo
+fi
+
 # The claude-code feature may install as root; `claude update` then fails with
 # insufficient permissions. Hand the package dir to the dev user.
 claude_pkg="$(npm root -g 2>/dev/null)/@anthropic-ai"
