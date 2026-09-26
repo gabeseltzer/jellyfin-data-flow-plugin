@@ -23,6 +23,12 @@ public class MediaRouteMatcherTests
     [InlineData("/Videos/abc/def/Subtitles/2/subtitles.m3u8")]
     [InlineData("/jellyfin/Videos/abc/stream.mp4")]
     [InlineData("/base/url/Audio/abc/hls1/main/1.ts")]
+    // Shapes the Jellyfin 12.0 web client requests: lower-case "videos", dashed item id,
+    // and a -1 fMP4 init segment.
+    [InlineData("/videos/7765b9b0-b647-b542-e40d-59a6f7dac8bb/master.m3u8")]
+    [InlineData("/videos/7765b9b0-b647-b542-e40d-59a6f7dac8bb/main.m3u8")]
+    [InlineData("/videos/7765b9b0-b647-b542-e40d-59a6f7dac8bb/hls1/main/-1.mp4")]
+    [InlineData("/videos/7765b9b0-b647-b542-e40d-59a6f7dac8bb/hls1/main/17.mp4")]
     public void MatchesMediaRoutes(string path) => Assert.True(MediaRouteMatcher.IsMediaPath(path));
 
     [Theory]

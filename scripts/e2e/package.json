@@ -4,6 +4,7 @@
   "description": "Headless-browser end-to-end check of the Data Flow panel against the dev Jellyfin container.",
   "scripts": {
     "install-browsers": "npx playwright install chromium && npx playwright install chrome",
+    "smoke": "node api-smoke.js",
     "e2e": "node e2e.js",
     "e2e:hls": "FORCE_TRANSCODE=1 THROTTLE_BPS=500000 THROTTLE_SECONDS=100 node e2e.js"
   },

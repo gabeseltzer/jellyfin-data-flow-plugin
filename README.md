@@ -107,6 +107,7 @@ bitrates; the Jellyfin at http://localhost:8096 is set up with user `admin` / pa
 scripts/deploy.sh                      # build, copy into dist/plugins, restart Jellyfin, tail logs
 dotnet test Jellyfin.Plugin.DataFlow.sln
 cd scripts/e2e && npm install && npm run install-browsers
+npm run smoke                          # no browser: server is 12.x, plugin Active, endpoints work without legacy auth
 npm run e2e                            # headless Chrome: login, play, open Playback Info, screenshots
 npm run e2e:hls                        # forced transcode + 0.5 Mbps throttle: buffered -> starved -> OK
 node perf-client.js                    # main-thread cost with the overlay open vs closed
@@ -115,7 +116,10 @@ scripts/package.sh                     # artifacts/dataflow_<version>.zip + mani
 
 The e2e script uses real Chrome rather than the Playwright Chromium build because the latter
 has no H.264 decoder. Chrome does not apply DevTools network throttling to `<video>` element
-loads, so the throttle test forces a transcode (hls.js uses XHR, which is throttled).
+loads, so the throttle test forces a transcode (hls.js uses XHR, which is throttled). Both e2e
+runs fail if any media request lacks a `DeviceId` query parameter or no bytes reach the device:
+Jellyfin 12.0's web client sends no auth header on media requests, so the query is the only way
+the plugin can attribute them.
 
 ## License
 

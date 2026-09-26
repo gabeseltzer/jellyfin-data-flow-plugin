@@ -7,7 +7,7 @@ namespace Jellyfin.Plugin.DataFlow.Tests;
 public class DeviceIdResolverTests
 {
     [Theory]
-    [InlineData("MediaBrowser Client=\"Jellyfin Web\", Device=\"Chrome\", DeviceId=\"abc123\", Version=\"10.11.0\"", "abc123")]
+    [InlineData("MediaBrowser Client=\"Jellyfin Web\", Device=\"Chrome\", DeviceId=\"abc123\", Version=\"12.0.0\"", "abc123")]
     [InlineData("MediaBrowser DeviceId=\"with%20space\", Client=\"x\"", "with space")]
     [InlineData("MediaBrowser Client=\"x\", DeviceId=unquoted, Version=\"1\"", "unquoted")]
     [InlineData("MediaBrowser deviceid=\"lower\"", "lower")]
@@ -28,15 +28,30 @@ public class DeviceIdResolverTests
         Assert.False(DeviceIdResolver.TryParseDeviceId(header, out _));
     }
 
+    // Jellyfin 12.0's web client sends no auth header on media requests: <video> and hls.js
+    // URLs carry DeviceId and ApiKey in the query (api_key is rejected by default in 12.0).
+    [Theory]
+    [InlineData("?static=true&deviceId=web-dev&MediaSourceId=m&ApiKey=k")]
+    [InlineData("?DeviceId=web-dev&MediaSourceId=m&PlaySessionId=p&ApiKey=k")]
+    [InlineData("?deviceid=web-dev")]
+    public void ReadsDeviceIdFromQuery(string query)
+    {
+        var ctx = new DefaultHttpContext();
+        ctx.Request.QueryString = new QueryString(query);
+        Assert.Equal("web-dev", DeviceIdResolver.Resolve(ctx.Request));
+    }
+
     [Fact]
     public void QueryTakesPrecedenceOverHeader()
     {
         var ctx = new DefaultHttpContext();
-        ctx.Request.QueryString = new QueryString("?DeviceId=fromquery&api_key=k");
+        ctx.Request.QueryString = new QueryString("?DeviceId=fromquery&ApiKey=k");
         ctx.Request.Headers.Authorization = "MediaBrowser DeviceId=\"fromheader\"";
         Assert.Equal("fromquery", DeviceIdResolver.Resolve(ctx.Request));
     }
 
+    // X-Emby-Authorization is disabled by default in 12.0 but still honoured when the admin
+    // turns EnableLegacyAuthorization back on, so older clients must still be attributed.
     [Fact]
     public void FallsBackToLegacyHeader()
     {

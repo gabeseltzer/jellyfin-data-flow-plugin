@@ -18,6 +18,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   page.on('console', (m) => { const t = m.text(); if (/\[DataFlow\]|pageerror|Uncaught/.test(t)) logs.push(`[${m.type()}] ${t}`); });
   page.on('pageerror', (e) => logs.push(`[pageerror] ${e.message}`));
   page.on('request', (r) => { if (r.url().includes('/DataFlow/')) dataFlowRequests.push({ t: Date.now(), url: r.url().replace(BASE, '') }); });
+  // Media requests are attributed to a device by their DeviceId query parameter; since 12.0 the web
+  // client sends no auth header on them (ApiKey rides in the query). Watch at context level so
+  // hls.js segment fetches are seen too.
+  const mediaRequests = [];
+  ctx.on('request', (r) => { const u = new URL(r.url()); if (/\/(videos|audio)\/[^/]+\/(stream|master\.m3u8|main\.m3u8|hls1\/)/i.test(u.pathname)) mediaRequests.push(u); });
 
   // 1. login
   await page.goto(`${BASE}/web/index.html`, { waitUntil: 'domcontentloaded' });
@@ -142,5 +147,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   console.log('DataFlow requests total:', dataFlowRequests.length, 'first few:', dataFlowRequests.slice(0, 4).map((r) => r.url).join(' ; '));
   console.log('console logs:', logs.length ? logs.join('\n') : '(none)');
+
+  const unattributed = mediaRequests.filter((u) => ![...u.searchParams.keys()].some((k) => k.toLowerCase() === 'deviceid'));
+  console.log('media requests:', mediaRequests.length, '| without DeviceId query:', unattributed.length, unattributed.slice(0, 3).map((u) => u.pathname).join(' ; '));
+  const downTotal = dbg.lastDown.reduce((a, b) => a + (b || 0), 0);
+  if (!mediaRequests.length || unattributed.length || !downTotal) {
+    console.error('E2E FAILED: media bytes were not attributed to this device');
+    process.exitCode = 1;
+  }
   await browser.close();
 })().catch((e) => { console.error('E2E FAILED', e); process.exit(1); });

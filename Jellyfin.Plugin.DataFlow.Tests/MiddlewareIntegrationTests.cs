@@ -155,6 +155,18 @@ public sealed class MiddlewareIntegrationTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task HlsSegment_WithQueryDeviceIdOnly_IsCounted()
+    {
+        // The Jellyfin 12.0 web client's hls.js requests: no auth header, credentials in the query.
+        var res = await _client!.GetAsync("/videos/item1/hls1/main/-1.mp4?DeviceId=dev-d&MediaSourceId=m&PlaySessionId=p&ApiKey=k");
+        Assert.Equal(42_000, (await res.Content.ReadAsByteArrayAsync()).Length);
+
+        Assert.True(_store.TryGet("dev-d", out var counters));
+        counters!.Drain(1);
+        Assert.Equal(new long[] { 42_000 }, counters.Down.Latest(1));
+    }
+
+    [Fact]
     public async Task ApiRequest_CountsUploadOnly()
     {
         var res = await _client!.GetAsync("/Sessions/Playing/Progress?deviceId=dev-c");
